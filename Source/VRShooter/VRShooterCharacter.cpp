@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
+#include "DrawDebugHelpers.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -140,33 +141,23 @@ void AVRShooterCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 void AVRShooterCharacter::OnFire()
 {
-	// try and fire a projectile
-	if (ProjectileClass != NULL)
+	FHitResult hitResult;
+	//UPrimitiveComponent* hitComponent;
+	FVector start = FP_Gun->GetComponentLocation();
+	FVector forwardVector = FirstPersonCameraComponent->GetForwardVector();
+	FVector end = ((forwardVector * 10000.f) + start);
+	FCollisionQueryParams CollisionParams;
+
+	if (GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, CollisionParams))
 	{
-		UWorld* const World = GetWorld();
-		if (World != NULL)
-		{
-			if (bUsingMotionControllers)
-			{
-				const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
-				const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
-				World->SpawnActor<AVRShooterProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
-			}
-			else
-			{
-				const FRotator SpawnRotation = GetControlRotation();
-				// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-				const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
-
-				//Set Spawn Collision Handling Override
-				FActorSpawnParameters ActorSpawnParams;
-				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-				// spawn the projectile at the muzzle
-				World->SpawnActor<AVRShooterProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
-			}
-		}
+		DrawDebugLine(GetWorld(), start, hitResult.ImpactPoint, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
+		DrawDebugBox(GetWorld(), hitResult.ImpactPoint, FVector(2.f, 2.f, 2.f), FColor::Blue, false, 0.5f, ECC_WorldStatic, 1.f);
+		/*hitComponent = hitResult.GetComponent();
+		if (hitComponent->IsSimulatingPhysics())
+			hitComponent->AddImpulseAtLocation(hitResult.i * 100.f, hitResult.Location);*/
 	}
+	else
+		DrawDebugLine(GetWorld(), start, end, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
 
 	// try and play the sound if specified
 	if (FireSound != NULL)
