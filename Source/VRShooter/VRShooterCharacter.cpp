@@ -143,6 +143,9 @@ void AVRShooterCharacter::OnFire()
 {
 	FHitResult hitResult;
 	//UPrimitiveComponent* hitComponent;
+	AActor* hitActor;
+	FDamageEvent damageEvent;
+
 	FVector start = FP_Gun->GetComponentLocation();
 	FVector forwardVector = FirstPersonCameraComponent->GetForwardVector();
 	FVector end = ((forwardVector * 10000.f) + start);
@@ -155,6 +158,9 @@ void AVRShooterCharacter::OnFire()
 		/*hitComponent = hitResult.GetComponent();
 		if (hitComponent->IsSimulatingPhysics())
 			hitComponent->AddImpulseAtLocation(hitResult.i * 100.f, hitResult.Location);*/
+		hitActor = hitResult.GetActor();
+		if (hitActor)
+			hitActor->TakeDamage(10.f, damageEvent, this->Controller, this);
 	}
 	else
 		DrawDebugLine(GetWorld(), start, end, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
