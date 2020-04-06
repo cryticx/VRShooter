@@ -76,3 +76,5 @@ DerivedDataCache/*
 # Starter content
 Content/StarterContent/*
 Content/AnimStarterPack/*
+Content/ArtAssets/*
+*.uasset
