@@ -12,6 +12,8 @@
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 #include "DrawDebugHelpers.h"
+#include "EngineGlobals.h"
+#include "Engine/Engine.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -83,6 +85,8 @@ AVRShooterCharacter::AVRShooterCharacter()
 
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
+
+	health = maxHealth = 100;
 }
 
 void AVRShooterCharacter::BeginPlay()
@@ -137,6 +141,9 @@ void AVRShooterCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("TurnRate", this, &AVRShooterCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AVRShooterCharacter::LookUpAtRate);
+
+	PlayerInputComponent->SetTickableWhenPaused(true);
+	playerInput = PlayerInputComponent;
 }
 
 void AVRShooterCharacter::OnFire()
@@ -294,4 +301,12 @@ bool AVRShooterCharacter::EnableTouchscreenMovement(class UInputComponent* Playe
 	}
 	
 	return false;
+}
+
+int AVRShooterCharacter::getHealth() {
+	return health;
+}
+
+int AVRShooterCharacter::getMaxHealth() {
+	return maxHealth;
 }
