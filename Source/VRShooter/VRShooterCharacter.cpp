@@ -86,7 +86,8 @@ AVRShooterCharacter::AVRShooterCharacter()
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
 
-	health = maxHealth = 100;
+	health = 90.f;
+	maxHealth = 100.f;
 }
 
 void AVRShooterCharacter::BeginPlay()
@@ -143,7 +144,12 @@ void AVRShooterCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AVRShooterCharacter::LookUpAtRate);
 
 	PlayerInputComponent->SetTickableWhenPaused(true);
-	playerInput = PlayerInputComponent;
+}
+
+void AVRShooterCharacter::Tick(float DeltaTime) {
+	health += DeltaTime;
+	if (health > maxHealth)
+		health = maxHealth;
 }
 
 void AVRShooterCharacter::OnFire()
@@ -157,6 +163,7 @@ void AVRShooterCharacter::OnFire()
 	FVector forwardVector = FirstPersonCameraComponent->GetForwardVector();
 	FVector end = ((forwardVector * 10000.f) + start);
 	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredComponent(GetCapsuleComponent());
 
 	if (GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, CollisionParams))
 	{
@@ -303,10 +310,20 @@ bool AVRShooterCharacter::EnableTouchscreenMovement(class UInputComponent* Playe
 	return false;
 }
 
-int AVRShooterCharacter::getHealth() {
+float AVRShooterCharacter::getHealth() {
 	return health;
 }
 
-int AVRShooterCharacter::getMaxHealth() {
+float AVRShooterCharacter::getMaxHealth() {
 	return maxHealth;
+}
+
+float AVRShooterCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) {
+	const float damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (damage > 0.f) {
+		health -= damage;
+		if (health <= 0.f)
+			SetLifeSpan(0.001f);
+	}
+	return damage;
 }
