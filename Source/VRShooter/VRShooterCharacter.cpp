@@ -158,16 +158,12 @@ void AVRShooterCharacter::OnFire()
 	//UPrimitiveComponent* hitComponent;
 	AActor* hitActor;
 	FDamageEvent damageEvent;
-
-	FVector start = FP_Gun->GetComponentLocation();
-	FVector forwardVector = FirstPersonCameraComponent->GetForwardVector();
-	FVector end = ((forwardVector * 10000.f) + start);
+	FVector start, end;
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredComponent(GetCapsuleComponent());
-
-	if (GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, CollisionParams))
-	{
-		DrawDebugLine(GetWorld(), start, hitResult.ImpactPoint, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
+	start = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector();
+	end = (start + FirstPersonCameraComponent->GetForwardVector() * 10000.f);if (GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, CollisionParams)) {
+		DrawDebugLine(GetWorld(), FP_MuzzleLocation->GetComponentLocation(), hitResult.ImpactPoint, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
 		DrawDebugBox(GetWorld(), hitResult.ImpactPoint, FVector(2.f, 2.f, 2.f), FColor::Blue, false, 0.5f, ECC_WorldStatic, 1.f);
 		/*hitComponent = hitResult.GetComponent();
 		if (hitComponent->IsSimulatingPhysics())
@@ -177,7 +173,7 @@ void AVRShooterCharacter::OnFire()
 			hitActor->TakeDamage(10.f, damageEvent, this->Controller, this);
 	}
 	else
-		DrawDebugLine(GetWorld(), start, end, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
+		DrawDebugLine(GetWorld(), FP_Gun->GetComponentLocation(), end, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
 
 	// try and play the sound if specified
 	if (FireSound != NULL)
