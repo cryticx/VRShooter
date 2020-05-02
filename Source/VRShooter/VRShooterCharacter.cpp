@@ -86,8 +86,7 @@ AVRShooterCharacter::AVRShooterCharacter()
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
 
-	health = 90.f;
-	maxHealth = 100.f;
+	health = maxHealth = 100.f;
 }
 
 void AVRShooterCharacter::BeginPlay()
@@ -162,8 +161,12 @@ void AVRShooterCharacter::OnFire()
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredComponent(GetCapsuleComponent());
 	start = FirstPersonCameraComponent->GetComponentLocation() + FirstPersonCameraComponent->GetForwardVector();
-	end = (start + FirstPersonCameraComponent->GetForwardVector() * 10000.f);if (GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, CollisionParams)) {
-		DrawDebugLine(GetWorld(), FP_MuzzleLocation->GetComponentLocation(), hitResult.ImpactPoint, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
+	end = (start + FirstPersonCameraComponent->GetForwardVector() * 10000.f);
+	if (GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, CollisionParams)) {
+		if (bUsingMotionControllers)
+			DrawDebugLine(GetWorld(), VR_MuzzleLocation->GetComponentLocation(), hitResult.ImpactPoint, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
+		else
+			DrawDebugLine(GetWorld(), FP_MuzzleLocation->GetComponentLocation(), hitResult.ImpactPoint, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
 		DrawDebugBox(GetWorld(), hitResult.ImpactPoint, FVector(2.f, 2.f, 2.f), FColor::Blue, false, 0.5f, ECC_WorldStatic, 1.f);
 		/*hitComponent = hitResult.GetComponent();
 		if (hitComponent->IsSimulatingPhysics())
@@ -172,9 +175,10 @@ void AVRShooterCharacter::OnFire()
 		if (hitActor)
 			hitActor->TakeDamage(10.f, damageEvent, this->Controller, this);
 	}
+	else if (bUsingMotionControllers)
+		DrawDebugLine(GetWorld(), VR_Gun->GetComponentLocation(), end, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
 	else
 		DrawDebugLine(GetWorld(), FP_Gun->GetComponentLocation(), end, FColor::Green, false, 0.5f, ECC_WorldStatic, 1.f);
-
 	// try and play the sound if specified
 	if (FireSound != NULL)
 	{
